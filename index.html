@@ -77,8 +77,8 @@
         .bg-hero-img {
             width: 100%;
             height: 100%;
-            /* 请替换为实际图片路径 */
-            background-image: url('bg-hero.png'); 
+            /* 修改：文件名改为 bg.png */
+            background-image: url('bg.png'); 
             background-size: cover;
             background-position: center;
             opacity: 0.9;
@@ -412,7 +412,8 @@
     </div>
 
     <header>
-        <img src="title.png" alt="长江珍稀物种的生命回响" class="title-img" onerror="this.style.display='none'; document.getElementById('fb-title').style.display='block'">
+        <!-- 修改：使用 title.webp -->
+        <img src="title.webp" alt="长江珍稀物种的生命回响" class="title-img" onerror="this.style.display='none'; document.getElementById('fb-title').style.display='block'">
         <h1 id="fb-title" style="display:none; color:#2E5C55; margin-bottom:10px;">长江珍稀物种的生命回响</h1>
         
         <div class="intro-text">
@@ -462,6 +463,7 @@
             node.innerHTML = `
                 <a href="${ep.link}" class="card" data-link="${ep.link}">
                     <div class="card-img-wrapper">
+                        <!-- 这里的图片保持 .jpg 格式 -->
                         <img src="${ep.id}.jpg" alt="${ep.title}" class="card-img" loading="lazy">
                         <div class="play-icon"><div class="play-tri"></div></div>
                     </div>
