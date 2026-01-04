@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 增加 viewport-fit=cover 以适配刘海屏 -->
+    <!-- 适配刘海屏 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>长江珍稀物种的生命回响</title>
     
@@ -152,6 +152,8 @@
             border-radius: 16px; box-shadow: 0 10px 40px -10px rgba(31, 38, 135, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.7); text-decoration: none; color: inherit;
             display: block; transition: transform 0.2s, box-shadow 0.2s; overflow: hidden; margin: 0 auto; 
+            /* 关键：避免点击高亮背景色影响体验 */
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
         }
         
         .card:active { transform: scale(0.97); box-shadow: 0 4px 15px rgba(31, 38, 135, 0.08); }
@@ -203,83 +205,9 @@
             position: relative; z-index: 2; text-align: center; font-size: 12px;
             color: #888; margin-top: 10px; padding: 20px;
         }
-
-        /* --- Iframe Modal 样式 --- */
-        .iframe-modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 10000;
-            display: none; /* 默认隐藏 */
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            animation: fadeIn 0.3s ease-out;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            /* 适配刘海屏 */
-            padding-top: env(safe-area-inset-top);
-        }
-        
-        .iframe-modal.active {
-            display: flex;
-        }
-
-        .iframe-wrapper {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            max-width: 100%;
-            background: #000;
-            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
-        }
-
-        .iframe-content {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: #fff;
-        }
-
-        .close-btn {
-            position: absolute;
-            /* 增大顶部距离，避开可能的状态栏 */
-            top: 20px; 
-            right: 20px;
-            /* 增大触摸区域，方便点击 */
-            width: 44px;
-            height: 44px;
-            background: rgba(0,0,0,0.6);
-            border: 1px solid rgba(255,255,255,0.4);
-            border-radius: 50%;
-            color: #fff;
-            font-size: 28px;
-            line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10001;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            /* 适配 iPhone 刘海屏，确保按钮不会被遮挡 */
-            margin-top: env(safe-area-inset-top);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
     </style>
 </head>
 <body>
-
-    <!-- Iframe 弹窗结构 -->
-    <div id="iframe-modal" class="iframe-modal">
-        <div class="iframe-wrapper">
-            <div class="close-btn" id="close-modal">×</div>
-            <iframe id="video-iframe" class="iframe-content" src="" allowfullscreen></iframe>
-        </div>
-    </div>
 
     <div class="layer-hero-container">
         <div class="bg-hero-wrapper"><div class="bg-hero-img"></div></div>
@@ -328,56 +256,14 @@
         document.addEventListener('DOMContentLoaded', () => {
             const container = document.getElementById('timeline');
             
-            // --- Modal 控制逻辑 (增强版) ---
-            const modal = document.getElementById('iframe-modal');
-            const iframe = document.getElementById('video-iframe');
-            const closeBtn = document.getElementById('close-modal');
-            
-            // 标记弹窗是否打开，防止重复逻辑
-            let isModalOpen = false;
-
-            function openModal(url) {
-                iframe.src = url;
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-                isModalOpen = true;
-
-                // 核心技巧：向浏览器历史记录添加一个状态
-                // 这样用户按手机“返回键”时，会触发 popstate 事件，而不是直接退出页面
-                window.history.pushState({ modalOpen: true }, "");
-            }
-
-            function closeModal() {
-                // 如果已经关闭，就不重复执行
-                if (!isModalOpen) return;
-
-                modal.classList.remove('active');
-                iframe.src = ''; 
-                document.body.style.overflow = '';
-                isModalOpen = false;
-            }
-
-            // 点击 UI 上的关闭按钮
-            closeBtn.addEventListener('click', () => {
-                // 这里我们调用 history.back() 模拟用户按了返回键
-                // 这样会触发 popstate 事件，统一由 popstate 处理关闭逻辑
-                // 这样做的好处是保持历史记录整洁
-                window.history.back();
-            });
-
-            // 监听浏览器的“后退”事件（包括手机物理返回键、侧滑返回）
-            window.addEventListener('popstate', () => {
-                if (isModalOpen) {
-                    closeModal();
-                }
-            });
-
+            // 生成卡片（标准的 <a href="..."> 跳转）
             if (container) {
                 episodes.forEach((ep) => {
                     const node = document.createElement('div');
                     node.className = 'episode-node'; 
+                    // 直接使用 a 标签包裹，href 指向目标链接，默认当前页跳转 (target="_self")
                     node.innerHTML = `
-                        <a href="${ep.link}" class="card" data-link="${ep.link}">
+                        <a href="${ep.link}" class="card">
                             <div class="card-img-wrapper">
                                 <img src="${ep.id}.jpg" alt="${ep.title}" class="card-img" loading="lazy">
                                 <div class="play-icon"><div class="play-tri"></div></div>
@@ -390,16 +276,6 @@
                         </a>
                     `;
                     container.appendChild(node);
-                });
-
-                document.querySelectorAll('.card').forEach(card => {
-                    card.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const link = this.getAttribute('data-link');
-                        if(link) {
-                            openModal(link);
-                        }
-                    });
                 });
             }
 
@@ -538,6 +414,9 @@
         });
 
         document.addEventListener('click', function(e) {
+            // 如果点击的是链接，不做波纹动画，直接跳转
+            if(e.target.closest('a')) return;
+
             const ripple = document.createElement('div');
             ripple.className = 'click-ripple';
             const size = 20; 
