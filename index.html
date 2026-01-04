@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>长江珍稀物种的生命回响</title>
+    
+    <!-- 🚀 性能优化：预加载关键资源 -->
+    <link rel="preload" as="image" href="bg.png">
+    <link rel="preload" as="image" href="title.webp">
+
     <style>
         /* --- 基础设置 --- */
         :root {
@@ -31,7 +36,7 @@
             padding-bottom: 60px;
         }
 
-        /* --- 提示框 Toast (用于外部浏览器复制提示) --- */
+        /* --- 提示框 Toast --- */
         .toast {
             position: fixed;
             top: 50%; left: 50%;
@@ -53,59 +58,32 @@
         .toast.show { opacity: 1; }
 
         /* --- 独立层级定义 --- */
-
-        /* 层 A: 背景大图 */
         .layer-hero-container {
             position: fixed;
-            top: -20%; 
-            left: 0; 
-            width: 100%; 
-            height: 140%; 
-            z-index: 0; 
-            pointer-events: none;
-            will-change: transform;
+            top: -20%; left: 0; width: 100%; height: 140%; 
+            z-index: 0; pointer-events: none; will-change: transform;
         }
 
         .bg-hero-wrapper {
-            position: absolute;
-            top: 14.3%; 
-            left: 0;
-            width: 100%;
-            aspect-ratio: 4/3; 
+            position: absolute; top: 14.3%; left: 0; width: 100%; aspect-ratio: 4/3; 
         }
 
         .bg-hero-img {
-            width: 100%;
-            height: 100%;
-            /* 修改：文件名改为 bg.png */
+            width: 100%; height: 100%;
             background-image: url('bg.png'); 
-            background-size: cover;
-            background-position: center;
-            opacity: 0.9;
+            background-size: cover; background-position: center; opacity: 0.9;
         }
 
-        /* 层 B: 光斑层 */
         .layer-orbs-container {
-            position: fixed;
-            top: -20%;
-            left: 0;
-            width: 100%;
-            height: 140%;
-            z-index: 1; 
-            pointer-events: none;
-            overflow: visible; 
-            will-change: transform;
+            position: fixed; top: -20%; left: 0; width: 100%; height: 140%;
+            z-index: 1; pointer-events: none; overflow: visible; will-change: transform;
         }
 
         .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(50px); 
-            mix-blend-mode: normal !important; 
-            animation: float 10s ease-in-out infinite;
+            position: absolute; border-radius: 50%; filter: blur(50px); 
+            mix-blend-mode: normal !important; animation: float 10s ease-in-out infinite;
         }
 
-        /* 光斑分布 */
         .orb-1 { width: 300px; height: 300px; background: #5C95E6; opacity: 0.4; top: 5%; left: -50px; animation-duration: 15s; }
         .orb-2 { width: 200px; height: 200px; background: #D4AF37; opacity: 0.4; top: 20%; right: -50px; animation-duration: 12s; }
         .orb-3 { width: 250px; height: 250px; background: #2E8B57; opacity: 0.4; top: 35%; left: 10%; animation-duration: 18s; }
@@ -120,250 +98,119 @@
             50% { transform: translate(30px, -30px); }
         }
 
-        /* --- 头部 --- */
         header {
-            position: relative;
-            z-index: 2; 
-            padding: 180px 20px 30px; 
-            text-align: center;
+            position: relative; z-index: 2; padding: 180px 20px 30px; text-align: center;
         }
 
         .title-img {
-            width: 90%;
-            max-width: 340px;
-            height: auto;
-            margin: 0 auto 20px;
-            display: block;
+            width: 90%; max-width: 340px; height: auto; margin: 0 auto 20px; display: block;
             animation: fadeInDown 1.2s cubic-bezier(0.22, 1, 0.36, 1);
             filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));
         }
 
         .intro-text {
-            font-size: 15px;
-            line-height: 1.8;
-            color: var(--text-secondary);
-            text-align: justify;
-            max-width: 600px;
-            margin: 0 auto;
-            border: none;
-            padding: 20px 24px;
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            border-radius: 12px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
-            animation: fadeIn 1.5s ease-out;
+            font-size: 15px; line-height: 1.8; color: var(--text-secondary); text-align: justify;
+            max-width: 600px; margin: 0 auto; border: none; padding: 20px 24px;
+            background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 12px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05); animation: fadeIn 1.5s ease-out;
         }
 
-        /* --- 河流布局 --- */
         .river-container {
-            position: relative;
-            width: 100%;
-            max-width: 600px; 
-            margin: 20px auto 0;
-            padding-bottom: 20px;
-            overflow: visible; 
-            z-index: 2;
+            position: relative; width: 100%; max-width: 600px; 
+            margin: 20px auto 0; padding-bottom: 20px; overflow: visible; z-index: 2;
         }
 
-        /* 呼吸灯动画 - 优化版：流动感增强 */
         @keyframes breathe-glow {
             0%, 100% { 
-                /* 静态：深蓝，微光，标准粗细 */
-                filter: drop-shadow(0 0 2px rgba(2, 119, 189, 0.3));
-                stroke: #0277BD; 
-                stroke-width: 10;
+                filter: drop-shadow(0 0 2px rgba(2, 119, 189, 0.3)); stroke: #0277BD; stroke-width: 10;
             }
             50% { 
-                /* 涌动：亮青色，双重强光晕，线条微涨，模拟液体充盈 */
                 filter: drop-shadow(0 0 8px rgba(79, 195, 247, 0.8)) drop-shadow(0 0 20px rgba(41, 182, 246, 0.5));
-                stroke: #4FC3F7; 
-                stroke-width: 13; 
+                stroke: #4FC3F7; stroke-width: 13; 
             }
         }
         
-        /* 新增：圆点呼吸动画，与河流颜色同步 */
         @keyframes point-breathe {
-            0%, 100% {
-                border-color: #0277BD;
-                box-shadow: 0 0 15px rgba(2, 119, 189, 0.5);
-            }
-            50% {
-                border-color: #4FC3F7;
-                box-shadow: 0 0 25px rgba(79, 195, 247, 0.9);
-            }
+            0%, 100% { border-color: #0277BD; box-shadow: 0 0 15px rgba(2, 119, 189, 0.5); }
+            50% { border-color: #4FC3F7; box-shadow: 0 0 25px rgba(79, 195, 247, 0.9); }
         }
 
         .river-line {
-            position: absolute;
-            left: 50%;
-            top: 80px; 
-            bottom: 120px; 
-            width: 120px; 
-            transform: translateX(-50%);
-            background-image: none;
-            z-index: 0; 
+            position: absolute; left: 50%; top: 80px; bottom: 120px; width: 120px; 
+            transform: translateX(-50%); background-image: none; z-index: 0; 
         }
 
         .river-svg {
-            width: 100%;
-            height: 100%;
-            overflow: visible;
+            width: 100%; height: 100%; overflow: visible; display: block; /* 防止 inline 元素导致的额外间隙 */
         }
 
         .river-path {
-            fill: none;
-            /* 移除 stroke 定义，交由动画控制颜色 */
-            /* stroke: var(--river-color); */
-            stroke-linecap: round;
-            /* 动画提速至 2s，增强生命律动感 */
-            animation: breathe-glow 2s ease-in-out infinite;
-            will-change: stroke, stroke-width, filter; /* 性能优化 */
+            fill: none; stroke-linecap: round;
+            animation: breathe-glow 2s ease-in-out infinite; will-change: stroke, stroke-width, filter;
         }
 
-        /* 修改：移除原来的CSS伪元素定义，改用通用类名控制JS生成的圆点 */
-        
         .river-point {
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            background: #fff;
-            border: 3px solid var(--river-color);
-            border-radius: 50%;
-            box-shadow: 0 0 15px rgba(79, 195, 247, 0.8); 
-            z-index: 1;
-            /* 关键：居中定位，让JS设置的left/top成为圆心 */
-            transform: translate(-50%, -50%); 
-            pointer-events: none;
-            /* 新增：应用与河流同步的呼吸动画 */
+            position: absolute; width: 14px; height: 14px; background: #fff;
+            border: 3px solid var(--river-color); border-radius: 50%;
+            box-shadow: 0 0 15px rgba(79, 195, 247, 0.8); z-index: 1;
+            transform: translate(-50%, -50%); pointer-events: none;
             animation: point-breathe 2s ease-in-out infinite;
         }
 
-        /* 每一集的节点 */
         .episode-node {
-            position: relative;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            margin-bottom: 40px; 
-            z-index: 2;
-            opacity: 0;
-            transform: translateY(50px); 
+            position: relative; width: 100%; display: flex; justify-content: center;
+            margin-bottom: 40px; z-index: 2; opacity: 0; transform: translateY(50px); 
             transition: opacity 1s ease-out, transform 1s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         
-        .episode-node:nth-child(even) {
-            transition-delay: 0.2s; 
-        }
+        .episode-node:nth-child(even) { transition-delay: 0.2s; }
+        .episode-node.reveal { opacity: 1; transform: translateY(0); }
 
-        .episode-node.reveal {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .river-dot { display: none; }
-
-        /* 卡片样式 */
         .card {
-            width: 88%; 
-            max-width: 400px; 
-            background: rgba(255, 255, 255, 0.8); 
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-radius: 16px; 
-            box-shadow: 0 10px 40px -10px rgba(31, 38, 135, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            transition: transform 0.2s, box-shadow 0.2s;
-            overflow: hidden;
-            margin: 0 auto; 
+            width: 88%; max-width: 400px; background: rgba(255, 255, 255, 0.8); 
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-radius: 16px; box-shadow: 0 10px 40px -10px rgba(31, 38, 135, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.7); text-decoration: none; color: inherit;
+            display: block; transition: transform 0.2s, box-shadow 0.2s; overflow: hidden; margin: 0 auto; 
         }
         
-        .card:active { 
-            transform: scale(0.97); 
-            box-shadow: 0 4px 15px rgba(31, 38, 135, 0.08);
-        }
-
-        .card-content { 
-            padding: 16px 20px; 
-            text-align: left;
-        }
+        .card:active { transform: scale(0.97); box-shadow: 0 4px 15px rgba(31, 38, 135, 0.08); }
+        .card-content { padding: 16px 20px; text-align: left; }
         
         .ep-tag {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start; 
-            font-size: 12px; 
-            color: var(--gold);
-            font-weight: bold;
-            letter-spacing: 1px;
-            margin-bottom: 6px;
-            text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+            display: flex; align-items: center; justify-content: flex-start; 
+            font-size: 12px; color: var(--gold); font-weight: bold; letter-spacing: 1px;
+            margin-bottom: 6px; text-shadow: 0 1px 0 rgba(255,255,255,0.8);
         }
 
         .card-img-wrapper {
-            position: relative;
-            width: 100%;
-            padding-top: 56.25%;
-            background: rgba(0,0,0,0.05);
-            border-bottom: 1px solid rgba(255,255,255,0.5);
+            position: relative; width: 100%; padding-top: 56.25%;
+            background: rgba(0,0,0,0.05); border-bottom: 1px solid rgba(255,255,255,0.5);
         }
         .card-img {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover;
-            transition: opacity 0.5s;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; transition: opacity 0.5s;
         }
         
         .play-icon {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 44px; height: 44px; 
-            background: rgba(255,255,255,0.3);
-            backdrop-filter: blur(4px);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid rgba(255,255,255,0.8);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 44px; height: 44px; background: rgba(255,255,255,0.3); backdrop-filter: blur(4px);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
         .play-tri {
-            width: 0; height: 0;
-            border-left: 12px solid #fff;
-            border-top: 8px solid transparent;
-            border-bottom: 8px solid transparent;
-            margin-left: 4px;
+            width: 0; height: 0; border-left: 12px solid #fff;
+            border-top: 8px solid transparent; border-bottom: 8px solid transparent; margin-left: 4px;
         }
         
-        .city {
-            display: block;
-            font-size: 15px; 
-            color: var(--river-color);
-            margin-bottom: 4px;
-            font-weight: bold;
-        }
-        
-        .title {
-            font-size: 17px; 
-            line-height: 1.4;
-            font-weight: bold;
-            color: #1a1a1a;
-            white-space: normal;
-            word-wrap: break-word;
-        }
+        .city { display: block; font-size: 15px; color: var(--river-color); margin-bottom: 4px; font-weight: bold; }
+        .title { font-size: 17px; line-height: 1.4; font-weight: bold; color: #1a1a1a; white-space: normal; word-wrap: break-word; }
 
         .click-ripple {
-            position: fixed;
-            border-radius: 50%;
-            background: transparent;
-            border: 2px solid rgba(2, 119, 189, 0.8); 
-            box-shadow: 0 0 12px rgba(2, 119, 189, 0.5);
-            transform: scale(0);
-            pointer-events: none; 
-            z-index: 9999;
+            position: fixed; border-radius: 50%; background: transparent;
+            border: 2px solid rgba(2, 119, 189, 0.8); box-shadow: 0 0 12px rgba(2, 119, 189, 0.5);
+            transform: scale(0); pointer-events: none; z-index: 9999;
             animation: ripple-refined 1s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
@@ -371,51 +218,31 @@
             0% { transform: scale(0); opacity: 0.8; border-width: 4px; }
             100% { transform: scale(4); opacity: 0; border-width: 0px; }
         }
-        
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
         footer {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-            font-size: 12px;
-            color: #888;
-            margin-top: 10px;
-            padding: 20px;
+            position: relative; z-index: 2; text-align: center; font-size: 12px;
+            color: #888; margin-top: 10px; padding: 20px;
         }
     </style>
 </head>
 <body>
 
-    <!-- 提示框 (Toast) - 仅在外部浏览器使用 -->
-    <div id="toast" class="toast">
-        链接已复制！<br>请在微信中粘贴并点击观看
-    </div>
+    <div id="toast" class="toast">链接已复制！<br>请在微信中粘贴并点击观看</div>
 
-    <!-- 独立视差层 A: 背景大图 -->
     <div class="layer-hero-container">
-        <div class="bg-hero-wrapper">
-            <div class="bg-hero-img"></div>
-        </div>
+        <div class="bg-hero-wrapper"><div class="bg-hero-img"></div></div>
     </div>
 
-    <!-- 独立视差层 B: 全屏光斑 -->
     <div class="layer-orbs-container">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-        <div class="orb orb-4"></div>
-        <div class="orb orb-5"></div>
-        <div class="orb orb-6"></div>
-        <div class="orb orb-7"></div>
-        <div class="orb orb-8"></div>
+        <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
+        <div class="orb orb-4"></div><div class="orb orb-5"></div><div class="orb orb-6"></div>
+        <div class="orb orb-7"></div><div class="orb orb-8"></div>
     </div>
 
     <header>
-        <!-- 修改：使用 title.webp -->
-        <img src="title.webp" alt="长江珍稀物种的生命回响" class="title-img" onerror="this.style.display='none'; document.getElementById('fb-title').style.display='block'">
+        <img src="title.webp" alt="长江珍稀物种的生命回响" class="title-img" fetchpriority="high" onerror="this.style.display='none'; document.getElementById('fb-title').style.display='block'">
         <h1 id="fb-title" style="display:none; color:#2E5C55; margin-bottom:10px;">长江珍稀物种的生命回响</h1>
-        
         <div class="intro-text">
             《长江珍稀物种的生命回响》记录了在“共抓大保护、不搞大开发”的理念指引下，长江沿线城市为珍稀物种重建家园、守护生命火种的行动。
             <br><br>
@@ -427,18 +254,12 @@
         <div class="river-line" id="river-line-container">
             <!-- SVG 将通过 JS 插入 -->
         </div>
-        <!-- 卡片生成区 -->
     </div>
 
-    <footer>
-        <p>点击单集跳转微信播放</p>
-    </footer>
+    <footer><p>点击单集跳转微信播放</p></footer>
 
     <script>
-        // 检测是否在微信内
         const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
-
-        // 数据源
         const episodes = [
             { id: 1, city: "昌都", title: "守护“雪山精灵”", link: "https://weixin.qq.com/sph/Ai4HdY5Wc" },
             { id: 2, city: "宜宾", title: "非同“鲟”常", link: "https://weixin.qq.com/sph/AHkCTuZRg" },
@@ -459,11 +280,9 @@
         episodes.forEach((ep) => {
             const node = document.createElement('div');
             node.className = 'episode-node'; 
-            
             node.innerHTML = `
                 <a href="${ep.link}" class="card" data-link="${ep.link}">
                     <div class="card-img-wrapper">
-                        <!-- 这里的图片保持 .jpg 格式 -->
                         <img src="${ep.id}.jpg" alt="${ep.title}" class="card-img" loading="lazy">
                         <div class="play-icon"><div class="play-tri"></div></div>
                     </div>
@@ -477,7 +296,6 @@
             container.appendChild(node);
         });
 
-        // 剪贴板复制辅助函数
         function copyToClipboard(text) {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 return navigator.clipboard.writeText(text);
@@ -494,36 +312,24 @@
                     document.execCommand('copy');
                     document.body.removeChild(textArea);
                     resolve();
-                } catch (err) {
-                    reject(err);
-                }
+                } catch (err) { reject(err); }
             });
         }
 
-        // 显示提示框
         function showToast() {
             const toast = document.getElementById('toast');
             toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
 
-        // 为所有卡片添加点击事件拦截
         document.querySelectorAll('.card').forEach(card => {
             card.addEventListener('click', function(e) {
-                // 如果是在微信内，直接放行，让它跳转
                 if (isWeChat) return;
-
-                // 如果是在外部浏览器，拦截并执行复制
                 e.preventDefault();
                 const link = this.getAttribute('data-link');
-                
                 copyToClipboard(link).then(() => {
                     showToast();
-                    setTimeout(() => {
-                        window.location.href = "weixin://";
-                    }, 1200);
+                    setTimeout(() => { window.location.href = "weixin://"; }, 1200);
                 }).catch(err => {
                     console.error('Copy failed', err);
                     window.location.href = "weixin://";
@@ -532,111 +338,119 @@
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            // --- 动态 SVG 曲线 ---
             const riverContainer = document.getElementById('river-line-container');
-            const height = riverContainer.offsetHeight;
-            const width = 120;
-            const center = width / 2;
-            
-            let d = `M ${center} 0`;
-            
-            const idealWaveHeight = 300; 
-            const steps = Math.round(height / idealWaveHeight) || 1;
-            const waveHeight = height / steps;
-
-            for (let i = 0; i < steps; i++) {
-                let yStart = i * waveHeight;
-                let amp = 40; 
-                d += ` Q ${center + amp} ${yStart + waveHeight/4} ${center} ${yStart + waveHeight/2}`;
-                d += ` T ${center} ${yStart + waveHeight}`;
-            }
-
-            const ns = "http://www.w3.org/2000/svg";
-            const svg = document.createElementNS(ns, "svg");
-            svg.setAttribute("class", "river-svg");
-            svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-            svg.setAttribute("preserveAspectRatio", "none"); 
-
-            const path = document.createElementNS(ns, "path");
-            path.setAttribute("class", "river-path");
-            path.setAttribute("d", d);
-            
-            svg.appendChild(path);
-            riverContainer.appendChild(svg);
-
-            // --- 修改：使用 CSS 百分比定位，彻底解决布局伸缩导致的错位问题 ---
-            
-            // 1. 头部圆点 (起点)
-            const startDot = document.createElement('div');
-            startDot.className = 'river-point';
-            riverContainer.appendChild(startDot);
-            // 锁定在顶部中心
-            startDot.style.left = '50%';
-            startDot.style.top = '0%'; 
-
-            // 2. 尾部圆点 (终点)
-            const endDot = document.createElement('div');
-            endDot.className = 'river-point';
-            riverContainer.appendChild(endDot);
-            // 锁定在底部中心
-            endDot.style.left = '50%';
-            endDot.style.top = '100%';
-
-            // --- 滚动绘制 (只增不减) ---
-            const pathLength = path.getTotalLength();
-            path.style.strokeDasharray = pathLength;
-            path.style.strokeDashoffset = pathLength;
-
+            let path; // 全局 path 引用
+            let pathLength = 0;
             let maxDrawLength = 0;
 
+            // --- 核心修复：封装成初始化函数，支持多次调用以适应布局变化 ---
+            function initRiver() {
+                // 清空旧内容，防止重绘时叠加
+                riverContainer.innerHTML = '';
+
+                const height = riverContainer.offsetHeight;
+                if (height === 0) return; // 如果容器高度为0，说明还没渲染好，跳过
+
+                const width = 120;
+                const center = width / 2;
+                
+                let d = `M ${center} 0`;
+                
+                const idealWaveHeight = 300; 
+                const steps = Math.round(height / idealWaveHeight) || 1;
+                const waveHeight = height / steps; // 确保数学上完美整除
+
+                for (let i = 0; i < steps; i++) {
+                    let yStart = i * waveHeight;
+                    let amp = 40; 
+                    d += ` Q ${center + amp} ${yStart + waveHeight/4} ${center} ${yStart + waveHeight/2}`;
+                    d += ` T ${center} ${yStart + waveHeight}`;
+                }
+
+                const ns = "http://www.w3.org/2000/svg";
+                const svg = document.createElementNS(ns, "svg");
+                svg.setAttribute("class", "river-svg");
+                svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+                svg.setAttribute("preserveAspectRatio", "none"); 
+
+                path = document.createElementNS(ns, "path");
+                path.setAttribute("class", "river-path");
+                path.setAttribute("d", d);
+                
+                svg.appendChild(path);
+                riverContainer.appendChild(svg);
+
+                // 生成头部圆点
+                const startDot = document.createElement('div');
+                startDot.className = 'river-point';
+                startDot.style.left = '50%';
+                startDot.style.top = '0%'; 
+                riverContainer.appendChild(startDot);
+
+                // 生成尾部圆点
+                const endDot = document.createElement('div');
+                endDot.className = 'river-point';
+                endDot.style.left = '50%';
+                endDot.style.top = '100%';
+                riverContainer.appendChild(endDot);
+
+                // 计算路径长度
+                try {
+                    pathLength = path.getTotalLength();
+                    // 防御性编程：如果算出来是0（偶发bug），给一个默认值防止隐身
+                    if (pathLength === 0) pathLength = height; 
+                } catch(e) {
+                    pathLength = height;
+                }
+                
+                path.style.strokeDasharray = pathLength;
+                // 重置偏移量，等待 updateDraw 来绘制
+                path.style.strokeDashoffset = pathLength;
+                
+                // 强制触发一次绘制，防止初始化时是空白
+                updateDraw();
+            }
+
+            // 执行初始化
+            initRiver();
+
+            // --- 绘制更新逻辑 ---
             function updateDraw() {
+                if (!path || pathLength === 0) return;
+
                 const scrollY = window.scrollY;
                 const windowHeight = window.innerHeight;
+                const bodyHeight = document.body.offsetHeight;
                 const riverTop = riverContainer.getBoundingClientRect().top + scrollY;
                 const drawTriggerPoint = scrollY + windowHeight * 0.75; 
                 
                 let currentDrawLength = drawTriggerPoint - riverTop;
-                
-                // --- 关键修改：强制完成逻辑 ---
-                // 如果用户已经滚动到接近页面底部（给一点容错空间如20px），
-                // 强制将绘制进度设为 100%，确保线段接触底部圆点。
-                if ((window.innerHeight + scrollY) >= document.body.offsetHeight - 20) {
+
+                // 强制完成逻辑：接近底部时直接画满，容错空间扩大到 50px
+                if ((window.innerHeight + scrollY) >= bodyHeight - 50) {
                      currentDrawLength = pathLength;
                 }
 
+                // 边界限制
                 if (currentDrawLength < 0) currentDrawLength = 0;
                 if (currentDrawLength > pathLength) currentDrawLength = pathLength;
                 
+                // "只增不减" 逻辑，但也允许在重新生成路径后重置
+                // 这里的处理：如果路径变短了（比如窗口缩小），maxDrawLength 可能会超出，需要取小值
+                if (maxDrawLength > pathLength) maxDrawLength = pathLength;
+
                 if (currentDrawLength > maxDrawLength) {
                     maxDrawLength = currentDrawLength;
-                    path.style.strokeDashoffset = pathLength - maxDrawLength;
+                    // 使用 toFixed 避免极小数精度的 NaN 问题
+                    path.style.strokeDashoffset = (pathLength - maxDrawLength).toFixed(2);
                 }
             }
 
-            // --- 观察器和滚动 ---
-            const observerOptions = {
-                root: null,
-                rootMargin: '0px',
-                threshold: 0.1 
-            };
+            // --- 事件监听 ---
 
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('reveal');
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, observerOptions);
-
-            const nodes = document.querySelectorAll('.episode-node');
-            nodes.forEach(node => {
-                observer.observe(node);
-            });
-
+            // 1. 滚动监听 (视差 + 绘制)
             const layerHero = document.querySelector('.layer-hero-container');
             const layerOrbs = document.querySelector('.layer-orbs-container');
-            
             let ticking = false;
 
             window.addEventListener('scroll', () => {
@@ -644,20 +458,45 @@
                     window.requestAnimationFrame(() => {
                         const scrolled = window.scrollY;
                         // 视差更新
-                        const transformValue = `translate3d(0, -${scrolled * 0.2}px, 0)`;
-                        if(layerHero) layerHero.style.transform = transformValue;
-                        if(layerOrbs) layerOrbs.style.transform = transformValue;
+                        if(layerHero) layerHero.style.transform = `translate3d(0, -${scrolled * 0.2}px, 0)`;
+                        if(layerOrbs) layerOrbs.style.transform = `translate3d(0, -${scrolled * 0.2}px, 0)`;
                         
-                        // 河流绘制更新
                         updateDraw();
-                        
                         ticking = false;
                     });
                     ticking = true;
                 }
             });
-            
-            updateDraw();
+
+            // 2. 窗口大小改变监听 (排雷关键：重新计算河流路径)
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                // 防抖，避免 resize 过程中频繁重绘导致卡顿
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    // 重置绘制进度，因为路径长度变了
+                    maxDrawLength = 0; 
+                    initRiver();
+                }, 200);
+            });
+
+            // 3. 页面完全加载监听 (排雷关键：确保图片加载撑开高度后，河流重新适应)
+            window.addEventListener('load', () => {
+                // 图片加载可能导致内容高度变化，再次初始化以匹配最终高度
+                initRiver();
+            });
+
+            // --- 节点显现动画 ---
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('reveal');
+                        obs.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.episode-node').forEach(node => observer.observe(node));
         });
 
         document.addEventListener('click', function(e) {
@@ -669,9 +508,7 @@
             ripple.style.left = (e.clientX - size/2) + 'px';
             ripple.style.top = (e.clientY - size/2) + 'px';
             document.body.appendChild(ripple);
-            ripple.addEventListener('animationend', () => {
-                ripple.remove();
-            });
+            ripple.addEventListener('animationend', () => ripple.remove());
         });
     </script>
 </body>
