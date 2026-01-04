@@ -2,10 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 增加 viewport-fit=cover 以适配刘海屏 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>长江珍稀物种的生命回响</title>
     
-    <!-- 🚀 性能优化：预加载关键资源 -->
     <link rel="preload" as="image" href="bg.png">
     <link rel="preload" as="image" href="title.webp">
 
@@ -35,27 +35,6 @@
             overflow-x: hidden;
             padding-bottom: 60px;
         }
-
-        /* --- 提示框 Toast --- */
-        .toast {
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.85);
-            color: #fff;
-            padding: 16px 24px;
-            border-radius: 8px;
-            font-size: 15px;
-            z-index: 10001;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            max-width: 80%;
-            line-height: 1.5;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        .toast.show { opacity: 1; }
 
         /* --- 独立层级定义 --- */
         .layer-hero-container {
@@ -142,7 +121,7 @@
         }
 
         .river-svg {
-            width: 100%; height: 100%; overflow: visible; display: block; /* 防止 inline 元素导致的额外间隙 */
+            width: 100%; height: 100%; overflow: visible; display: block;
         }
 
         .river-path {
@@ -224,11 +203,83 @@
             position: relative; z-index: 2; text-align: center; font-size: 12px;
             color: #888; margin-top: 10px; padding: 20px;
         }
+
+        /* --- Iframe Modal 样式 --- */
+        .iframe-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 10000;
+            display: none; /* 默认隐藏 */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            /* 适配刘海屏 */
+            padding-top: env(safe-area-inset-top);
+        }
+        
+        .iframe-modal.active {
+            display: flex;
+        }
+
+        .iframe-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            background: #000;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+        }
+
+        .iframe-content {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+        }
+
+        .close-btn {
+            position: absolute;
+            /* 增大顶部距离，避开可能的状态栏 */
+            top: 20px; 
+            right: 20px;
+            /* 增大触摸区域，方便点击 */
+            width: 44px;
+            height: 44px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 50%;
+            color: #fff;
+            font-size: 28px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10001;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            /* 适配 iPhone 刘海屏，确保按钮不会被遮挡 */
+            margin-top: env(safe-area-inset-top);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="toast" class="toast">链接已复制！<br>请在微信中粘贴并点击观看</div>
+    <!-- Iframe 弹窗结构 -->
+    <div id="iframe-modal" class="iframe-modal">
+        <div class="iframe-wrapper">
+            <div class="close-btn" id="close-modal">×</div>
+            <iframe id="video-iframe" class="iframe-content" src="" allowfullscreen></iframe>
+        </div>
+    </div>
 
     <div class="layer-hero-container">
         <div class="bg-hero-wrapper"><div class="bg-hero-img"></div></div>
@@ -256,109 +307,120 @@
         </div>
     </div>
 
-    <footer><p>点击单集跳转微信播放</p></footer>
+    <footer><p>点击单集观看视频</p></footer>
 
     <script>
-        const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
         const episodes = [
-            { id: 1, city: "昌都", title: "守护“雪山精灵”", link: "https://weixin.qq.com/sph/Ai4HdY5Wc" },
-            { id: 2, city: "宜宾", title: "非同“鲟”常", link: "https://weixin.qq.com/sph/AHkCTuZRg" },
-            { id: 3, city: "铜仁", title: "梵净山的“精灵”", link: "https://weixin.qq.com/sph/AjpUUKBWq" },
-            { id: 4, city: "九龙坡", title: "以江为伴 与鹭同行", link: "https://weixin.qq.com/sph/ANESnbn18" },
-            { id: 5, city: "万州", title: "“蕨”处逢生", link: "https://weixin.qq.com/sph/A0zUU0MCn" },
-            { id: 6, city: "宜昌", title: "护鲟归江", link: "https://weixin.qq.com/sph/AGfT9qA9I" },
-            { id: 7, city: "荆州", title: "重回长江的麋鹿", link: "https://weixin.qq.com/sph/AATPxVkb0" },
-            { id: 8, city: "长沙", title: "湘江再见“一抹红”", link: "https://weixin.qq.com/sph/ApHR8sKxp" },
-            { id: 9, city: "赣州", title: "在会昌深山遇见连片“植物界大熊猫”", link: "https://weixin.qq.com/sph/AeIOvO5H5" },
-            { id: 10, city: "安庆", title: "“长江微笑守望者”<br>——一个“豚爸”与江豚的故事", link: "https://weixin.qq.com/sph/Ar75XmGIi" },
-            { id: 11, city: "金华", title: "“森林卫士”的隐秘家园", link: "https://weixin.qq.com/sph/ACuMKNMlw" },
-            { id: 12, city: "泰州", title: "麋途", link: "https://weixin.qq.com/sph/AN8cGZwmt" }
+            { id: 1, city: "昌都", title: "守护“雪山精灵”", link: "http://www.gorgeousyichang.com/content-63329-3922-1.html" },
+            { id: 2, city: "宜宾", title: "非同“鲟”常", link: "http://www.gorgeousyichang.com/content-63329-3927-1.html" },
+            { id: 3, city: "铜仁", title: "梵净山的“精灵”", link: "http://www.gorgeousyichang.com/content-63329-3930-1.html" },
+            { id: 4, city: "九龙坡", title: "以江为伴 与鹭同行", link: "http://www.gorgeousyichang.com/content-63329-3933-1.html" },
+            { id: 5, city: "万州", title: "“蕨”处逢生", link: "http://www.gorgeousyichang.com/content-63329-3936-1.html" },
+            { id: 6, city: "宜昌", title: "护鲟归江", link: "http://www.gorgeousyichang.com/content-63329-3939-1.html" },
+            { id: 7, city: "荆州", title: "重回长江的麋鹿", link: "http://www.gorgeousyichang.com/content-63329-3941-1.html" },
+            { id: 8, city: "长沙", title: "湘江再见“一抹红”", link: "http://www.gorgeousyichang.com/content-63329-3943-1.html" },
+            { id: 9, city: "赣州", title: "在会昌深山遇见连片“植物界大熊猫”", link: "http://www.gorgeousyichang.com/content-63329-3943-1.html" },
+            { id: 10, city: "安庆", title: "“长江微笑守望者”<br>——一个“豚爸”与江豚的故事", link: "http://www.gorgeousyichang.com/content-63329-3949-1.html" },
+            { id: 11, city: "金华", title: "“森林卫士”的隐秘家园", link: "http://www.gorgeousyichang.com/content-63329-3952-1.html" },
+            { id: 12, city: "泰州", title: "麋途", link: "http://www.gorgeousyichang.com/content-63329-3957-1.html" }
         ];
 
-        const container = document.getElementById('timeline');
-
-        episodes.forEach((ep) => {
-            const node = document.createElement('div');
-            node.className = 'episode-node'; 
-            node.innerHTML = `
-                <a href="${ep.link}" class="card" data-link="${ep.link}">
-                    <div class="card-img-wrapper">
-                        <img src="${ep.id}.jpg" alt="${ep.title}" class="card-img" loading="lazy">
-                        <div class="play-icon"><div class="play-tri"></div></div>
-                    </div>
-                    <div class="card-content">
-                        <div class="ep-tag">EP.${ep.id < 10 ? '0'+ep.id : ep.id}</div>
-                        <span class="city">${ep.city}</span>
-                        <div class="title">${ep.title.replace(ep.city + '：', '')}</div>
-                    </div>
-                </a>
-            `;
-            container.appendChild(node);
-        });
-
-        function copyToClipboard(text) {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                return navigator.clipboard.writeText(text);
-            }
-            return new Promise((resolve, reject) => {
-                try {
-                    const textArea = document.createElement("textarea");
-                    textArea.value = text;
-                    textArea.style.position = "fixed";
-                    textArea.style.left = "-9999px";
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    resolve();
-                } catch (err) { reject(err); }
-            });
-        }
-
-        function showToast() {
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 3000);
-        }
-
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('click', function(e) {
-                if (isWeChat) return;
-                e.preventDefault();
-                const link = this.getAttribute('data-link');
-                copyToClipboard(link).then(() => {
-                    showToast();
-                    setTimeout(() => { window.location.href = "weixin://"; }, 1200);
-                }).catch(err => {
-                    console.error('Copy failed', err);
-                    window.location.href = "weixin://";
-                });
-            });
-        });
-
         document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('timeline');
+            
+            // --- Modal 控制逻辑 (增强版) ---
+            const modal = document.getElementById('iframe-modal');
+            const iframe = document.getElementById('video-iframe');
+            const closeBtn = document.getElementById('close-modal');
+            
+            // 标记弹窗是否打开，防止重复逻辑
+            let isModalOpen = false;
+
+            function openModal(url) {
+                iframe.src = url;
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                isModalOpen = true;
+
+                // 核心技巧：向浏览器历史记录添加一个状态
+                // 这样用户按手机“返回键”时，会触发 popstate 事件，而不是直接退出页面
+                window.history.pushState({ modalOpen: true }, "");
+            }
+
+            function closeModal() {
+                // 如果已经关闭，就不重复执行
+                if (!isModalOpen) return;
+
+                modal.classList.remove('active');
+                iframe.src = ''; 
+                document.body.style.overflow = '';
+                isModalOpen = false;
+            }
+
+            // 点击 UI 上的关闭按钮
+            closeBtn.addEventListener('click', () => {
+                // 这里我们调用 history.back() 模拟用户按了返回键
+                // 这样会触发 popstate 事件，统一由 popstate 处理关闭逻辑
+                // 这样做的好处是保持历史记录整洁
+                window.history.back();
+            });
+
+            // 监听浏览器的“后退”事件（包括手机物理返回键、侧滑返回）
+            window.addEventListener('popstate', () => {
+                if (isModalOpen) {
+                    closeModal();
+                }
+            });
+
+            if (container) {
+                episodes.forEach((ep) => {
+                    const node = document.createElement('div');
+                    node.className = 'episode-node'; 
+                    node.innerHTML = `
+                        <a href="${ep.link}" class="card" data-link="${ep.link}">
+                            <div class="card-img-wrapper">
+                                <img src="${ep.id}.jpg" alt="${ep.title}" class="card-img" loading="lazy">
+                                <div class="play-icon"><div class="play-tri"></div></div>
+                            </div>
+                            <div class="card-content">
+                                <div class="ep-tag">EP.${ep.id < 10 ? '0'+ep.id : ep.id}</div>
+                                <span class="city">${ep.city}</span>
+                                <div class="title">${ep.title.replace(ep.city + '：', '')}</div>
+                            </div>
+                        </a>
+                    `;
+                    container.appendChild(node);
+                });
+
+                document.querySelectorAll('.card').forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const link = this.getAttribute('data-link');
+                        if(link) {
+                            openModal(link);
+                        }
+                    });
+                });
+            }
+
+            // --- 河流逻辑 ---
             const riverContainer = document.getElementById('river-line-container');
-            let path; // 全局 path 引用
+            let path; 
             let pathLength = 0;
             let maxDrawLength = 0;
 
-            // --- 核心修复：封装成初始化函数，支持多次调用以适应布局变化 ---
             function initRiver() {
-                // 清空旧内容，防止重绘时叠加
                 riverContainer.innerHTML = '';
-
                 const height = riverContainer.offsetHeight;
-                if (height === 0) return; // 如果容器高度为0，说明还没渲染好，跳过
+                if (height === 0) return; 
 
                 const width = 120;
                 const center = width / 2;
                 
                 let d = `M ${center} 0`;
-                
                 const idealWaveHeight = 300; 
                 const steps = Math.round(height / idealWaveHeight) || 1;
-                const waveHeight = height / steps; // 确保数学上完美整除
+                const waveHeight = height / steps; 
 
                 for (let i = 0; i < steps; i++) {
                     let yStart = i * waveHeight;
@@ -380,41 +442,33 @@
                 svg.appendChild(path);
                 riverContainer.appendChild(svg);
 
-                // 生成头部圆点
                 const startDot = document.createElement('div');
                 startDot.className = 'river-point';
                 startDot.style.left = '50%';
                 startDot.style.top = '0%'; 
                 riverContainer.appendChild(startDot);
 
-                // 生成尾部圆点
                 const endDot = document.createElement('div');
                 endDot.className = 'river-point';
                 endDot.style.left = '50%';
                 endDot.style.top = '100%';
                 riverContainer.appendChild(endDot);
 
-                // 计算路径长度
                 try {
                     pathLength = path.getTotalLength();
-                    // 防御性编程：如果算出来是0（偶发bug），给一个默认值防止隐身
                     if (pathLength === 0) pathLength = height; 
                 } catch(e) {
                     pathLength = height;
                 }
                 
                 path.style.strokeDasharray = pathLength;
-                // 重置偏移量，等待 updateDraw 来绘制
                 path.style.strokeDashoffset = pathLength;
                 
-                // 强制触发一次绘制，防止初始化时是空白
                 updateDraw();
             }
 
-            // 执行初始化
             initRiver();
 
-            // --- 绘制更新逻辑 ---
             function updateDraw() {
                 if (!path || pathLength === 0) return;
 
@@ -426,29 +480,21 @@
                 
                 let currentDrawLength = drawTriggerPoint - riverTop;
 
-                // 强制完成逻辑：接近底部时直接画满，容错空间扩大到 50px
                 if ((window.innerHeight + scrollY) >= bodyHeight - 50) {
                      currentDrawLength = pathLength;
                 }
 
-                // 边界限制
                 if (currentDrawLength < 0) currentDrawLength = 0;
                 if (currentDrawLength > pathLength) currentDrawLength = pathLength;
                 
-                // "只增不减" 逻辑，但也允许在重新生成路径后重置
-                // 这里的处理：如果路径变短了（比如窗口缩小），maxDrawLength 可能会超出，需要取小值
                 if (maxDrawLength > pathLength) maxDrawLength = pathLength;
 
                 if (currentDrawLength > maxDrawLength) {
                     maxDrawLength = currentDrawLength;
-                    // 使用 toFixed 避免极小数精度的 NaN 问题
                     path.style.strokeDashoffset = (pathLength - maxDrawLength).toFixed(2);
                 }
             }
 
-            // --- 事件监听 ---
-
-            // 1. 滚动监听 (视差 + 绘制)
             const layerHero = document.querySelector('.layer-hero-container');
             const layerOrbs = document.querySelector('.layer-orbs-container');
             let ticking = false;
@@ -457,10 +503,8 @@
                 if (!ticking) {
                     window.requestAnimationFrame(() => {
                         const scrolled = window.scrollY;
-                        // 视差更新
                         if(layerHero) layerHero.style.transform = `translate3d(0, -${scrolled * 0.2}px, 0)`;
                         if(layerOrbs) layerOrbs.style.transform = `translate3d(0, -${scrolled * 0.2}px, 0)`;
-                        
                         updateDraw();
                         ticking = false;
                     });
@@ -468,25 +512,19 @@
                 }
             });
 
-            // 2. 窗口大小改变监听 (排雷关键：重新计算河流路径)
             let resizeTimeout;
             window.addEventListener('resize', () => {
-                // 防抖，避免 resize 过程中频繁重绘导致卡顿
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
-                    // 重置绘制进度，因为路径长度变了
                     maxDrawLength = 0; 
                     initRiver();
                 }, 200);
             });
 
-            // 3. 页面完全加载监听 (排雷关键：确保图片加载撑开高度后，河流重新适应)
             window.addEventListener('load', () => {
-                // 图片加载可能导致内容高度变化，再次初始化以匹配最终高度
                 initRiver();
             });
 
-            // --- 节点显现动画 ---
             const observer = new IntersectionObserver((entries, obs) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
